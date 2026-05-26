@@ -2,7 +2,7 @@ const fileInput = document.getElementById('file-input');
 const uploadStatus = document.getElementById('upload-status');
 const photoGrid = document.getElementById('photo-grid');
 
-// 已替換為您專屬的 Google Apps Script 網址
+// Google Apps Script 網址
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbx4AgBveM1ToVjv5U08qhV3qnt4qngZGTCXZf1XvzrQxLru0jbumrSblRJ8IsxpBxWK/exec';
 
 fileInput.addEventListener('change', async (e) => {
@@ -26,7 +26,6 @@ fileInput.addEventListener('change', async (e) => {
           thumbnail: thumbnailBase64
         })
       });
-      
       if (!response.ok) throw new Error('Upload failed');
     } catch (error) {
       console.error(error);
@@ -68,21 +67,35 @@ async function fetchGallery() {
     const response = await fetch(GAS_URL);
     const photos = await response.json();
     photoGrid.innerHTML = '';
+
+    if (!photos.length) {
+      photoGrid.innerHTML = '<p style="text-align:center;opacity:0.5;grid-column:1/-1">目前還沒有照片，快來上傳第一張吧！</p>';
+      return;
+    }
+
     photos.forEach(photo => {
       const item = document.createElement('div');
       item.className = 'photo-item';
-      item.innerHTML = `<img src="${photo.thumbUrl}" alt="Wedding Photo">`;
-      item.onclick = () => openLightbox(photo.origUrl);
+
+      const img = document.createElement('img');
+      // 使用 thumbnail API 格式，解決 Drive 圖片載入問題
+      img.src = `https://drive.google.com/thumbnail?id=${photo.thumbId}&sz=w400`;
+      img.alt = 'Wedding Photo';
+      img.onerror = () => { img.src = ''; img.style.display = 'none'; };
+
+      item.appendChild(img);
+      item.onclick = () => openLightbox(photo.origId);
       photoGrid.appendChild(item);
     });
   } catch (error) {
     console.error('無法載入相片牆', error);
+    photoGrid.innerHTML = '<p style="text-align:center;opacity:0.5;grid-column:1/-1">載入失敗，請重新整理頁面。</p>';
   }
 }
 
-function openLightbox(url) {
+function openLightbox(origId) {
   const lightboxImg = document.getElementById('lightbox-img');
-  lightboxImg.src = url;
+  lightboxImg.src = `https://drive.google.com/thumbnail?id=${origId}&sz=w1600`;
   document.getElementById('lightbox').style.display = 'flex';
 }
 
