@@ -1,0 +1,127 @@
+/* 全局樣式設定 */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #FDFCF4;
+  color: #D0D6BA;
+  font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.wedding-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.wedding-header h1 {
+  font-size: 2.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.divider {
+  border: 0;
+  height: 1px;
+  background: #D0D6BA;
+  margin: 40px 0;
+  opacity: 0.5;
+}
+
+/* 上傳按鈕 */
+.upload-section {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.upload-btn {
+  display: inline-block;
+  padding: 14px 50px;
+  border: 1px solid #D0D6BA;
+  color: #D0D6BA;
+  background-color: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.upload-btn:hover {
+  background-color: #D0D6BA;
+  color: #FDFCF4;
+}
+
+.status-text {
+  margin-top: 15px;
+  font-size: 0.9rem;
+  min-height: 20px;
+}
+
+/* 相片牆網格（響應式設計） */
+.gallery-container h2 {
+  text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 15px;
+  width: 100%;
+}
+
+.photo-item {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border: 1px solid #D0D6BA;
+  overflow: hidden;
+  cursor: pointer;
+  background-color: rgba(208, 214, 186, 0.1);
+}
+
+.photo-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.photo-item :hover img {
+  transform: scale(1.05);
+}
+
+/* 燈箱放大效果 */
+.lightbox {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(253, 252, 244, 0.95);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.lightbox img {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  border: 1px solid #D0D6BA;
+}
+
+.upload-tip {
+  font-size: 0.85rem;
+  color: #D0D6BA;
+  opacity: 0.8;
+  line-height: 1.6;
+  margin-top: 12px;
+  text-align: center;
+}

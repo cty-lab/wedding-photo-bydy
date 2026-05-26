@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Wedding Gallery</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="container">
+    <header class="wedding-header">
+      <h1>OUR WEDDING DAY</h1>
+      <p>上傳您的即時照片，與我們分享幸福瞬間</p>
+    </header>
+
+    <section class="upload-section">
+      <label for="file-input" class="upload-btn">選擇照片上傳 (可多選)</label>
+      <input type="file" id="file-input" accept="image/*" multiple style="display: none;">
+      
+      <p class="upload-tip">
+        ※ 為了保留您的完美畫質，系統將傳送原始大圖。<br>
+        選取多張上傳時，請保持網頁開啟並稍作等待。
+      </p>
+      
+      <div id="upload-status" class="status-text"></div>
+    </section>
+
+    <hr class="divider">
+
+    <section class="gallery-container">
+      <h2>相片牆</h2>
+      <div id="photo-grid" class="photo-grid">
+        </div>
+    </section>
+  </main>
+
+  <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+    <img id="lightbox-img" src="" alt="放大照片">
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
