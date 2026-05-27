@@ -34,6 +34,11 @@ fileInput.addEventListener('change', async (e) => {
         throw new Error(result.message || '後端處理失敗');
       }
 
+      // 【核心修正】不依賴 Google 緩慢的索引，直接將收到的新照片 ID 貼上相片牆
+      if (result.thumbId) {
+        insertPhotoToGrid(result.thumbId);
+      }
+
       if (i < files.length - 1) {
         uploadStatus.innerText = `第 ${i + 1} 張完成。系統冷卻中，準備傳下一張...`;
         await new Promise(res => setTimeout(res, 2000)); 
@@ -47,8 +52,32 @@ fileInput.addEventListener('change', async (e) => {
   }
   
   uploadStatus.innerText = '所有相片上傳成功！謝謝您的祝福。';
-  fetchGallery();
+  // 移除原有的 fetchGallery() 呼叫，避免舊清單覆蓋剛貼上的新照片
 });
+
+// 新增：將單張照片直接插入相片牆最前方的功能
+function insertPhotoToGrid(thumbId) {
+  // 若原本畫面上有「目前還沒有照片」的提示，將其移除
+  const emptyMsg = photoGrid.querySelector('p');
+  if (emptyMsg) emptyMsg.remove();
+
+  const item = document.createElement('div');
+  item.className = 'photo-item';
+  const img = document.createElement('img');
+  img.src = `https://drive.google.com/thumbnail?id=${thumbId}&sz=w400`;
+  img.alt = 'Wedding Photo';
+  img.onerror = () => { img.src = ''; img.style.display = 'none'; };
+  
+  item.appendChild(img);
+  item.onclick = () => openLightbox(thumbId);
+
+  // 強制將新照片插入到網格的第一個位置
+  if (photoGrid.firstChild) {
+    photoGrid.insertBefore(item, photoGrid.firstChild);
+  } else {
+    photoGrid.appendChild(item);
+  }
+}
 
 const toBase64 = file => new Promise((resolve, reject) => {
   const reader = new FileReader();
