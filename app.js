@@ -34,7 +34,6 @@ fileInput.addEventListener('change', async (e) => {
         throw new Error(result.message || '後端處理失敗');
       }
 
-      // 【核心修正】不依賴 Google 緩慢的索引，直接將收到的新照片 ID 貼上相片牆
       if (result.thumbId) {
         insertPhotoToGrid(result.thumbId);
       }
@@ -52,12 +51,9 @@ fileInput.addEventListener('change', async (e) => {
   }
   
   uploadStatus.innerText = '所有相片上傳成功！謝謝您的祝福。';
-  // 移除原有的 fetchGallery() 呼叫，避免舊清單覆蓋剛貼上的新照片
 });
 
-// 新增：將單張照片直接插入相片牆最前方的功能
 function insertPhotoToGrid(thumbId) {
-  // 若原本畫面上有「目前還沒有照片」的提示，將其移除
   const emptyMsg = photoGrid.querySelector('p');
   if (emptyMsg) emptyMsg.remove();
 
@@ -71,7 +67,6 @@ function insertPhotoToGrid(thumbId) {
   item.appendChild(img);
   item.onclick = () => openLightbox(thumbId);
 
-  // 強制將新照片插入到網格的第一個位置
   if (photoGrid.firstChild) {
     photoGrid.insertBefore(item, photoGrid.firstChild);
   } else {
@@ -146,3 +141,4 @@ function closeLightbox() {
 }
 
 window.onload = fetchGallery;
+// --- 檔案結束，請確認有複製到此行 ---
