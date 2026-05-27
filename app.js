@@ -13,21 +13,34 @@ fileInput.addEventListener('change', async (e) => {
     const file = files[i];
     uploadStatus.innerText = `正在傳送第 (${i + 1}/${files.length}) 張相片，請勿關閉網頁...`;
     try {
-      // 縮圖：800px 用於相片牆顯示
-      const thumbnailBase64 = await createThumbnail(file, 800, 0.7);
-      // 原圖：壓縮至 2000px 保留高畫質收藏
-      const originalBase64 = await createThumbnail(file, 2000, 0.92);
+      const filename = `${Date.now()}_${file.name}`;
 
-      const response = await fetch(GAS_URL, {
+      // 第一次請求：上傳縮圖
+      const thumbnailBase64 = await createThumbnail(file, 800, 0.7);
+      const thumbResponse = await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
-          filename: `${Date.now()}_${file.name}`,
-          original: originalBase64,
+          type: 'thumbnail',
+          filename: filename,
           thumbnail: thumbnailBase64
         })
       });
-      if (!response.ok) throw new Error('Upload failed');
+      if (!thumbResponse.ok) throw new Error('縮圖上傳失敗');
+
+      // 第二次請求：上傳原圖
+      const originalBase64 = await createThumbnail(file, 2000, 0.92);
+      const origResponse = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          type: 'original',
+          filename: filename,
+          original: originalBase64
+        })
+      });
+      if (!origResponse.ok) throw new Error('原圖上傳失敗');
+
     } catch (error) {
       console.error(error);
       uploadStatus.innerText = `第 ${i + 1} 張相片上傳失敗，請稍後再試。`;
@@ -36,13 +49,6 @@ fileInput.addEventListener('change', async (e) => {
   }
   uploadStatus.innerText = '所有相片上傳成功！謝謝您的祝福 🎉';
   fetchGallery();
-});
-
-const toBase64 = file => new Promise((resolve, reject) => {
-  const reader = new FileReader();
-  reader.readAsDataURL(file);
-  reader.onload = () => resolve(reader.result.split(',')[1]);
-  reader.onerror = error => reject(error);
 });
 
 const createThumbnail = (file, targetWidth, quality) => new Promise((resolve) => {
