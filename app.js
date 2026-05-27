@@ -2,7 +2,7 @@ const fileInput = document.getElementById('file-input');
 const uploadStatus = document.getElementById('upload-status');
 const photoGrid = document.getElementById('photo-grid');
 
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbwm7wu1rZS-2d8RSh6J9hS83ETHWp6mPE5cbgmwM1oIblS4AhoqxdnczibfdCiSwpj1ww/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbz3iHJtyPFj8pYA8K8tZxP-iFJgmXbs9R_DXSUeMquzehbhJEgUoJkn2__F0uA21KHx/exec';
 
 fileInput.addEventListener('change', async (e) => {
   const files = e.target.files;
