@@ -2,7 +2,6 @@ const fileInput = document.getElementById('file-input');
 const uploadStatus = document.getElementById('upload-status');
 const photoGrid = document.getElementById('photo-grid');
 
-// Google Apps Script 網址
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbx4AgBveM1ToVjv5U08qhV3qnt4qngZGTCXZf1XvzrQxLru0jbumrSblRJ8IsxpBxWK/exec';
 
 fileInput.addEventListener('change', async (e) => {
@@ -14,15 +13,14 @@ fileInput.addEventListener('change', async (e) => {
     const file = files[i];
     uploadStatus.innerText = `正在傳送第 (${i + 1}/${files.length}) 張相片，請勿關閉網頁...`;
     try {
-      const originalBase64 = await toBase64(file);
-      const thumbnailBase64 = await createThumbnail(file, 400);
+      // 只傳縮圖（800px、品質 0.7），大幅加快速度
+      const thumbnailBase64 = await createThumbnail(file, 800, 0.7);
 
       const response = await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
           filename: `${Date.now()}_${file.name}`,
-          original: originalBase64,
           thumbnail: thumbnailBase64
         })
       });
@@ -33,18 +31,11 @@ fileInput.addEventListener('change', async (e) => {
       return;
     }
   }
-  uploadStatus.innerText = '所有相片上傳成功！謝謝您的祝福。';
+  uploadStatus.innerText = '所有相片上傳成功！謝謝您的祝福 🎉';
   fetchGallery();
 });
 
-const toBase64 = file => new Promise((resolve, reject) => {
-  const reader = new FileReader();
-  reader.readAsDataURL(file);
-  reader.onload = () => resolve(reader.result.split(',')[1]);
-  reader.onerror = error => reject(error);
-});
-
-const createThumbnail = (file, targetWidth) => new Promise((resolve) => {
+const createThumbnail = (file, targetWidth, quality) => new Promise((resolve) => {
   const reader = new FileReader();
   reader.readAsDataURL(file);
   reader.onload = (event) => {
@@ -53,11 +44,12 @@ const createThumbnail = (file, targetWidth) => new Promise((resolve) => {
     img.onload = () => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      const scaleFactor = targetWidth / img.width;
-      canvas.width = targetWidth;
+      const width = Math.min(img.width, targetWidth);
+      const scaleFactor = width / img.width;
+      canvas.width = width;
       canvas.height = img.height * scaleFactor;
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
+      resolve(canvas.toDataURL('image/jpeg', quality).split(',')[1]);
     };
   };
 });
@@ -76,15 +68,12 @@ async function fetchGallery() {
     photos.forEach(photo => {
       const item = document.createElement('div');
       item.className = 'photo-item';
-
       const img = document.createElement('img');
-      // 使用 thumbnail API 格式，解決 Drive 圖片載入問題
       img.src = `https://drive.google.com/thumbnail?id=${photo.thumbId}&sz=w400`;
       img.alt = 'Wedding Photo';
       img.onerror = () => { img.src = ''; img.style.display = 'none'; };
-
       item.appendChild(img);
-      item.onclick = () => openLightbox(photo.origId);
+      item.onclick = () => openLightbox(photo.thumbId);
       photoGrid.appendChild(item);
     });
   } catch (error) {
@@ -93,9 +82,9 @@ async function fetchGallery() {
   }
 }
 
-function openLightbox(origId) {
+function openLightbox(thumbId) {
   const lightboxImg = document.getElementById('lightbox-img');
-  lightboxImg.src = `https://drive.google.com/thumbnail?id=${origId}&sz=w1600`;
+  lightboxImg.src = `https://drive.google.com/thumbnail?id=${thumbId}&sz=w1200`;
   document.getElementById('lightbox').style.display = 'flex';
 }
 
