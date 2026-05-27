@@ -2,9 +2,10 @@ const fileInput = document.getElementById('file-input');
 const uploadStatus = document.getElementById('upload-status');
 const photoGrid = document.getElementById('photo-grid');
 
-// 已替換為您最新部署的專屬網址
+// 您最新部署的專屬網址
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxBy3alQR06O2h1Fgot3MzekdCVy__R7Eqdw91RS466QLhmnFpXPdofeMl4AGMdoQF3/exec';
 
+// 監聽檔案上傳
 fileInput.addEventListener('change', async (e) => {
   const files = e.target.files;
   if (!files.length) return;
@@ -87,7 +88,10 @@ const createThumbnail = (file, targetWidth, quality) => new Promise((resolve) =>
 // 撈取雲端相片
 async function fetchGallery() {
   try {
-    const response = await fetch(GAS_URL);
+    // 加入時間戳記，強制瀏覽器放棄快取，確保每位賓客都能看見最新照片
+    const noCacheUrl = `${GAS_URL}?t=${Date.now()}`;
+    const response = await fetch(noCacheUrl);
+    
     const photos = await response.json();
     photoGrid.innerHTML = '';
 
@@ -101,4 +105,12 @@ async function fetchGallery() {
       item.className = 'photo-item';
       const img = document.createElement('img');
       img.src = `https://drive.google.com/thumbnail?id=${photo.thumbId}&sz=w400`;
-      img.alt =
+      img.alt = 'Wedding Photo';
+      img.onerror = () => { img.src = ''; img.style.display = 'none'; };
+      item.appendChild(img);
+      item.onclick = () => openLightbox(photo.thumbId);
+      photoGrid.appendChild(item);
+    });
+  } catch (error) {
+    console.error('無法載入相片牆', error);
+    photoGrid.innerHTML = '<p style="text-align:center;opacity:0.5;grid-column:1/-1">載入失敗，請重新整理頁面。</p>';
