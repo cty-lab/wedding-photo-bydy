@@ -12,40 +12,41 @@ fileInput.addEventListener('change', async (e) => {
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     uploadStatus.innerText = `正在傳送第 (${i + 1}/${files.length}) 張相片，請勿關閉網頁...`;
+    
     try {
       const filename = `${Date.now()}_${file.name}`;
 
-      // 第一次請求：原始檔案不壓縮，存到 Originals 收藏用
+      // 同時準備好原圖與縮圖的 Base64 資料
       const originalBase64 = await toBase64(file);
-      await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          type: 'original',
-          filename: filename,
-          original: originalBase64
-        })
-      });
-
-      // 第二次請求：縮圖（800px）存到 Thumbnails，相片牆顯示用
       const thumbnailBase64 = await createThumbnail(file, 800, 0.7);
-      await fetch(GAS_URL, {
+
+      // 合併為單次請求發送，對齊後端接收格式
+      const response = await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
-          type: 'thumbnail',
           filename: filename,
+          original: originalBase64,
           thumbnail: thumbnailBase64
         })
       });
 
+      if (!response.ok) throw new Error('伺服器回應錯誤');
+
+      // 強制冷卻時間，避免連續上傳觸發 Google 防護機制
+      if (i < files.length - 1) {
+        uploadStatus.innerText = `第 ${i + 1} 張完成。系統冷卻中，準備傳下一張...`;
+        await new Promise(res => setTimeout(res, 2000)); 
+      }
+
     } catch (error) {
       console.error(error);
       uploadStatus.innerText = `第 ${i + 1} 張相片上傳失敗，請稍後再試。`;
-      return;
+      await new Promise(res => setTimeout(res, 3000)); 
     }
   }
-  uploadStatus.innerText = '所有相片上傳成功！謝謝您的祝福 🎉';
+  
+  uploadStatus.innerText = '所有相片上傳成功！謝謝您的祝福。';
   fetchGallery();
 });
 
