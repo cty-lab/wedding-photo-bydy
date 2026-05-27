@@ -15,19 +15,7 @@ fileInput.addEventListener('change', async (e) => {
     try {
       const filename = `${Date.now()}_${file.name}`;
 
-      // 第一次請求：縮圖（800px）存到 Thumbnails，相片牆顯示用
-      const thumbnailBase64 = await createThumbnail(file, 800, 0.7);
-      await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          type: 'thumbnail',
-          filename: filename,
-          thumbnail: thumbnailBase64
-        })
-      });
-
-      // 第二次請求：原始檔案不壓縮，存到 Originals 收藏用
+      // 第一次請求：原始檔案不壓縮，存到 Originals 收藏用
       const originalBase64 = await toBase64(file);
       await fetch(GAS_URL, {
         method: 'POST',
@@ -36,6 +24,18 @@ fileInput.addEventListener('change', async (e) => {
           type: 'original',
           filename: filename,
           original: originalBase64
+        })
+      });
+
+      // 第二次請求：縮圖（800px）存到 Thumbnails，相片牆顯示用
+      const thumbnailBase64 = await createThumbnail(file, 800, 0.7);
+      await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          type: 'thumbnail',
+          filename: filename,
+          thumbnail: thumbnailBase64
         })
       });
 
