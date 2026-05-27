@@ -15,8 +15,8 @@ fileInput.addEventListener('change', async (e) => {
     try {
       // 縮圖：800px 用於相片牆顯示
       const thumbnailBase64 = await createThumbnail(file, 800, 0.7);
-      // 原圖：完整畫質保留收藏
-      const originalBase64 = await toBase64(file);
+      // 原圖：壓縮至 2000px 保留高畫質收藏
+      const originalBase64 = await createThumbnail(file, 2000, 0.92);
 
       const response = await fetch(GAS_URL, {
         method: 'POST',
