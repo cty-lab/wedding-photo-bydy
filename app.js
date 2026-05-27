@@ -15,9 +15,9 @@ fileInput.addEventListener('change', async (e) => {
     try {
       const filename = `${Date.now()}_${file.name}`;
 
-      // 第一次請求：上傳縮圖
+      // 第一次請求：縮圖（800px）存到 Thumbnails，相片牆顯示用
       const thumbnailBase64 = await createThumbnail(file, 800, 0.7);
-      const thumbResponse = await fetch(GAS_URL, {
+      await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
@@ -26,11 +26,10 @@ fileInput.addEventListener('change', async (e) => {
           thumbnail: thumbnailBase64
         })
       });
-      if (!thumbResponse.ok) throw new Error('縮圖上傳失敗');
 
-      // 第二次請求：上傳原圖
-      const originalBase64 = await createThumbnail(file, 2000, 0.92);
-      const origResponse = await fetch(GAS_URL, {
+      // 第二次請求：原始檔案不壓縮，存到 Originals 收藏用
+      const originalBase64 = await toBase64(file);
+      await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
@@ -39,7 +38,6 @@ fileInput.addEventListener('change', async (e) => {
           original: originalBase64
         })
       });
-      if (!origResponse.ok) throw new Error('原圖上傳失敗');
 
     } catch (error) {
       console.error(error);
@@ -51,6 +49,15 @@ fileInput.addEventListener('change', async (e) => {
   fetchGallery();
 });
 
+// 原始檔案，完全不壓縮
+const toBase64 = file => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = () => resolve(reader.result.split(',')[1]);
+  reader.onerror = error => reject(error);
+});
+
+// 縮圖，用於相片牆顯示
 const createThumbnail = (file, targetWidth, quality) => new Promise((resolve) => {
   const reader = new FileReader();
   reader.readAsDataURL(file);
